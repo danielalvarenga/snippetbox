@@ -30,6 +30,20 @@ func main() {
 	// catch any URl path starting with the pattern, like a wildcard ("/**" or "/public/**")
 	// * Fixed paths: it doesn't end with trailing slash and is catched only when the
 	// URL path is exactly the same
+	//
+	// Important:
+	// * Servemux doesn't support RESTful functionalities like http methods, variables or
+	// regexp in routes. Recommended to use third-party routers (future commits).
+	// * Longer URL patterns takes precedence over shorter ones
+	// * URL patterns are automatically sanitized and redirected (301 Permanent Redirect)
+	// to the correspondent path. Ex: "/any/../foo//bar" to "/any/foo/bar"
+	// * Request without trailing slash that matches with some subtree path is redirected
+	// (301 Permanent Redirect) to subtree path. Ex: "/any" to "/any/"
+	// * URL pattenrs accepts host names like "foo.any.com/create"
+	// * Instead explicitly declare a servemux and use mux.HandleFunc(),
+	// you can use http.HandleFunc() directly using the global variable "DefaultServeMux"
+	// implicitly created by "net/http" package, but it isn't safe because any package
+	// can access global variables and handle this in your application
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", home)
 	mux.HandleFunc("/snippet/view", snippetView)

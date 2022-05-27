@@ -6,6 +6,13 @@ import (
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
+	// To avoid the servemux behavior for subtree paths,
+	// check if the path is exactly the same to continue or redirect
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
+
 	w.Write([]byte("Hello from SnippetBox"))
 }
 
@@ -18,8 +25,11 @@ func snippetCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// Servemux catch all requests for the URL pattern "/",
-	// even trying access other patterns like "/any"
+	// Servemux supports two types of URL patterns:
+	// * Subtree paths: it ends with trailing slash, like "/" or "/public/", and
+	// catch any URl path starting with the pattern, like a wildcard ("/**" or "/public/**")
+	// * Fixed paths: it doesn't end with trailing slash and is catched only when the
+	// URL path is exactly the same
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", home)
 	mux.HandleFunc("/snippet/view", snippetView)

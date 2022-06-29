@@ -21,6 +21,24 @@ func snippetView(w http.ResponseWriter, r *http.Request) {
 }
 
 func snippetCreate(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		// * You must set headers, if you need, before write response ("w.WriteHeader()",
+		// "w.Write()" or http.Error())
+		// * Use http constants is the best practice: http.MethodPost = "POST". More
+		// contsants in https://pkg.go.dev/net/http#pkg-constants
+		w.Header().Set("Allow", http.MethodPost)
+
+		// * For errors use the helper "http.Error(...)" that calls "w.WriteHeader" and "w.Write"
+		// indirectly to write the response;
+		// * Use http constants is the best practice: http.StatusMethodNotAllowed = 405. More
+		// contsants in https://pkg.go.dev/net/http#pkg-constants
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// * The function "w.WriteHeader" should be called only once per response;
+	// * When not called after the function "w.Write", the response status code will be 200;
+	w.WriteHeader(201)
 	w.Write([]byte("Create a new snippet..."))
 }
 

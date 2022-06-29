@@ -36,6 +36,23 @@ func snippetCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// * Go automatically set the headers "Content-type", "Content-Length" and "Date", but
+	// the function http.DetectContentType() can't distinguish JSON from plain text, so
+	// you need to set manually.
+	w.Header().Set("Content-Type", "application/json")
+
+	// To supress sytem generated headers you need to set nil for the value
+	w.Header()["Date"] = nil
+
+	// * Instead use "Set" you can use "Add" to append values for the same header
+	w.Header().Add("Cache-Control", "public")
+	w.Header().Add("Cache-Control", "max-age=32645000")
+
+	// * When editing the header throught Set(), Add(), Del(), Get() and Values(), it
+	// will be automatically canonicalized (first letters in keys names putted in upper case for
+	// HTTP/1 or all keys and values in down case for HTTP/2)
+	w.Header()["down-case"] = []string{"true"}
+
 	// * The function "w.WriteHeader" should be called only once per response;
 	// * When not called after the function "w.Write", the response status code will be 200;
 	w.WriteHeader(201)

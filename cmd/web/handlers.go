@@ -17,15 +17,25 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 	// Parse a template file using the absoluty path or the relative path from
 	// the path that you start the application (usually the root)
-	ts, err := template.ParseFiles("./ui/html/pages/home.tmpl")
+	templatefilesPaths := []string{
+		"./ui/html/base.tmpl",
+		"./ui/html/partials/nav.tmpl",
+		"./ui/html/pages/home.tmpl",
+	}
+	// The function "template.ParseFiles" accepts many template files paths (variadic function)
+	ts, err := template.ParseFiles(templatefilesPaths...)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	// Write a response using the template file passing the dynamic data used inside template
+	// * Write a response using the template file passing the dynamic data used inside template
+	// * ts.Execute(w, dynamicData) to not use named template
+	// * ts.ExecuteTemplate(w, "templateName", dynamicData) to use a named template
+	// * Instead read files from disk using the package "html/template" another way is using the
+	// package "embed" to embed files in Go
 	var dynamicData interface{} = nil
-	err = ts.Execute(w, dynamicData)
+	err = ts.ExecuteTemplate(w, "base", dynamicData)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}

@@ -1,0 +1,31 @@
+<!-- Define the template name. This property opens with "define" in the begining of the file and
+  closes with "end" in end of the file -->
+{{define "base"}}
+<!doctype html>
+<html lang='en'>
+    <head>
+        <meta charset='utf-8'>
+        <!-- "title" is the invoked template name, and dot (.) is the dynamic data
+          passed to invoked template -->
+        <title>{{template "title" .}} - Snippetbox</title>
+    </head>
+    <body>
+        <header>
+            <h1><a href='/'>Snippetbox</a></h1>
+        </header>
+        {{ template "nav" .}}
+        <main>
+            <!-- "main" is the invoked template name, and dot (.) is the dynamic data
+              passed to invoked template -->
+            {{template "main" .}}
+        </main>
+        {{block "optional" .}}
+          <!-- The action "block" works like the action "template" to invoke, but if the
+          template wasn't loaded from handler or not exists, will be showed the content
+          inside the block -->
+          <p>Template "optional" doesn't exist or wasn't loaded</p>
+        {{end}}
+        <footer>Powered by <a href='https://golang.org/'>Go</a></footer>
+    </body>
+</html>
+{{end}}

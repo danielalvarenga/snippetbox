@@ -8,6 +8,10 @@
         <!-- "title" is the invoked template name, and dot (.) is the dynamic data
           passed to invoked template -->
         <title>{{template "title" .}} - Snippetbox</title>
+        <!-- Accessing the static files from the template -->
+        <link rel='stylesheet' href='/static/css/main.css'>
+        <link rel='shortcut icon' href='/static/img/favicon.ico' type='image/x-icon'>
+        <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700'>
     </head>
     <body>
         <header>

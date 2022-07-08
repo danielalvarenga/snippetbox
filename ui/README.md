@@ -1,0 +1,1 @@
+In `ui` folder we have all the files for user interface, like `html` or static assets such as images, css, etc.

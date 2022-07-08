@@ -1,0 +1,1 @@
+In `cmd` folder we have all the Go executable applications separated by folder, like `web`, `cli`, `lambdas`, etc.

@@ -43,6 +43,8 @@ func main() {
 	// * Request without trailing slash that matches with some subtree path is redirected
 	// (301 Permanent Redirect) to subtree path. Ex: "/any" to "/any/"
 	// * URL pattenrs accepts host names like "foo.any.com/create"
+	// * Equivalent to "mux.Handle("/", http.HandlerFunc(home))", that converts the normal
+	// function "home" in a accepted http.Handler interface
 	mux.HandleFunc("/", home)
 	mux.HandleFunc("/snippet/view", snippetView)
 	mux.HandleFunc("/snippet/create", snippetCreate)
@@ -53,6 +55,10 @@ func main() {
 	// ":my-port-name" to use named port that Go will try to get the
 	// correspondence from "/etc/services"
 	log.Println("Starting server on :4000")
+	// * The servemux implements the http.Handler interface, so we can pass it to the
+	// http.ListenAndServe and for each request the handler method in servemux forward
+	// to the correct handler method based in the registered routes
+	// * Each request is handled concurrently in its own goroutine
 	err := http.ListenAndServe(":4000", mux)
 	log.Fatal(err)
 }

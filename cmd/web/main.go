@@ -1,11 +1,26 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 )
 
 func main() {
+	// * Map a flag passed from commands in terminal to a variable, storing the default value,
+	// such as `go run ./cmd/web -addr=":9999"`
+	// * Return a pointer
+	// * flag.String(), flagInt(), flag.Bool(), flag.Float64() try to convert value automatically
+	// * The default for boolean flags is true
+	// * When use the flag "-help" on the terminal all the mapped flags will be showed
+	// * To map flags in pre-existing variables use `flag.StringVar(&addr, "addr", ":4000", "...")`
+	// * Instead flags you can use env variables to get values with `os.Getenv()`, but for this you
+	// don't have implicity type conversion, default value and help like flags. Another way is to use
+	// flags with envs to have all the functionalities. Ex: `go run ./cmd/web -addr=$MY_ADDR_ENV`
+	addr := flag.String("addr", ":4000", "HTTP network address")
+	// * Parse flags to set the received values in mapped variables
+	flag.Parse()
+
 	// * Instead explicitly declare a servemux and use mux.HandleFunc(),
 	// you can use http.HandleFunc() directly to set routes. It uses the global variable
 	// "DefaultServeMux" implicitly created by "net/http" package, but it isn't safe
@@ -54,11 +69,11 @@ func main() {
 	// ":port" to any host and specific port number or
 	// ":my-port-name" to use named port that Go will try to get the
 	// correspondence from "/etc/services"
-	log.Println("Starting server on :4000")
+	log.Println("Starting server on", *addr)
 	// * The servemux implements the http.Handler interface, so we can pass it to the
 	// http.ListenAndServe and for each request the handler method in servemux forward
 	// to the correct handler method based in the registered routes
 	// * Each request is handled concurrently in its own goroutine
-	err := http.ListenAndServe(":4000", mux)
+	err := http.ListenAndServe(*addr, mux)
 	log.Fatal(err)
 }

@@ -7,7 +7,9 @@ import (
 	"strconv"
 )
 
-func home(w http.ResponseWriter, r *http.Request) {
+// * Setting the handlers as a application method we can use the application dependencies injected
+// on its properties
+func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// To avoid the servemux behavior for subtree paths,
 	// check if the path is exactly the same to continue or redirect
 	if r.URL.Path != "/" {
@@ -25,6 +27,8 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// The function "template.ParseFiles" accepts many template files paths (variadic function)
 	ts, err := template.ParseFiles(templatefilesPaths...)
 	if err != nil {
+		// Using the application dependency `errorLog` injected on its initialization in main()
+		app.errorLog.Println(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -37,11 +41,12 @@ func home(w http.ResponseWriter, r *http.Request) {
 	var dynamicData interface{} = nil
 	err = ts.ExecuteTemplate(w, "base", dynamicData)
 	if err != nil {
+		app.errorLog.Println(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }
 
-func snippetView(w http.ResponseWriter, r *http.Request) {
+func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	// Getting query parameters
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
@@ -54,7 +59,7 @@ func snippetView(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Display a specific snippet with id %d", id)
 }
 
-func snippetCreate(w http.ResponseWriter, r *http.Request) {
+func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	// * Always use http constants as the best practice: http.MethodPost = "POST".
 	// See all http constants in https://pkg.go.dev/net/http#pkg-constants
 	if r.Method != http.MethodPost {
@@ -94,4 +99,12 @@ func snippetCreate(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("Create a new snippet..."))
 
+}
+
+// * Passing dependencies from main() directly to the handler function using "closure"
+func closureExample(app *application) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		app.infoLog.Println("Handler using closure as a example")
+		w.Write([]byte("Handler using closure as a example."))
+	})
 }

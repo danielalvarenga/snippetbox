@@ -7,6 +7,16 @@ import (
 	"os"
 )
 
+// * Create a application struct to inject dependencies needed for the whole application
+// * For handlers spread in different packages we can pass dependencies directly to handler
+// functions using closure (ex: https://www.calhoun.io/5-useful-ways-to-use-closures-in-go)
+// or creating a handler struct for each package to receive dependencies to be accessed by
+// the handler functions as methods
+type application struct {
+	infoLog  *log.Logger
+	errorLog *log.Logger
+}
+
 func main() {
 	// * Map a flag passed from commands in terminal to a variable, storing the default value,
 	// such as `go run ./cmd/web -addr=":9999"`
@@ -33,6 +43,12 @@ func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	// * Output: ERROR   2022/07/19 19:32:12 main.go:85: error message
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+
+	// Instantiate the application injecting dependencies
+	app := &application{
+		infoLog:  infoLog,
+		errorLog: errorLog,
+	}
 
 	// * Instead explicitly declare a servemux and use mux.HandleFunc(),
 	// you can use http.HandleFunc() directly to set routes. It uses the global variable
@@ -71,11 +87,14 @@ func main() {
 	// * Request without trailing slash that matches with some subtree path is redirected
 	// (301 Permanent Redirect) to subtree path. Ex: "/any" to "/any/"
 	// * URL pattenrs accepts host names like "foo.any.com/create"
-	// * Equivalent to "mux.Handle("/", http.HandlerFunc(home))", that converts the normal
-	// function "home" in a accepted http.Handler interface
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/snippet/view", snippetView)
-	mux.HandleFunc("/snippet/create", snippetCreate)
+	mux.HandleFunc("/", app.home)
+	mux.HandleFunc("/snippet/view", app.snippetView)
+	// * mux.HandleFunc() is equivalent to "mux.Handle("/", http.HandlerFunc(home))", that
+	// converts the normal function "home" in a accepted http.Handler interface
+	mux.Handle("/snippet/create", http.HandlerFunc(app.snippetCreate))
+	// * Passing dependencies from main() directly to the handler function using "closure"
+	// using http.HandlerFunc() in the handler as a example
+	mux.Handle("/closure-example", closureExample(app))
 
 	// The function http.ListenAndServe() should receive the TCP network
 	// in the format "host:port" to specifics host and port number or

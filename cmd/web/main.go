@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -20,6 +21,18 @@ func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
 	// * Parse flags to set the received values in mapped variables
 	flag.Parse()
+
+	// * With `log.New(destination, prefix, additional information)` we can set different log levels
+	// for diferent destinations and different additional information (flags)
+	// * Use log constants (https://pkg.go.dev/log#pkg-constants) to set additional information like
+	// `log.Ldate` to add date, `log.Ltime` to add time, `log.Lshortfile` to add filename and line,
+	// log.LUTC to use UTC datetime instead local datetime, etc...
+	// * Loggers created by log.New() are concurrency-safe, but if you have many loggers writing in the
+	// same destination you need to ensure that the destination is safe for concurrent use too
+	// * Output: INFO    2022/07/19 19:32:12 my custom message
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	// * Output: ERROR   2022/07/19 19:32:12 main.go:85: error message
+	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	// * Instead explicitly declare a servemux and use mux.HandleFunc(),
 	// you can use http.HandleFunc() directly to set routes. It uses the global variable
@@ -69,11 +82,20 @@ func main() {
 	// ":port" to any host and specific port number or
 	// ":my-port-name" to use named port that Go will try to get the
 	// correspondence from "/etc/services"
-	log.Println("Starting server on", *addr)
+	infoLog.Println("Starting server on", *addr)
 	// * The servemux implements the http.Handler interface, so we can pass it to the
 	// http.ListenAndServe and for each request the handler method in servemux forward
 	// to the correct handler method based in the registered routes
 	// * Each request is handled concurrently in its own goroutine
-	err := http.ListenAndServe(*addr, mux)
-	log.Fatal(err)
+	// * To use the custom errorLog for http errors we should to instantiate a new http
+	// server struct passing the settings by properties and start the server from it
+	srv := &http.Server{
+		Addr:     *addr,
+		Handler:  mux,
+		ErrorLog: errorLog,
+	}
+	err := srv.ListenAndServe()
+	// * Is a good practice call Panic() ou Fatal() and their variations only from the main()
+	// * More log methods good to know: https://pkg.go.dev/log#Logger
+	errorLog.Fatal(err)
 }

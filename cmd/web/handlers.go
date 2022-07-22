@@ -13,7 +13,8 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// To avoid the servemux behavior for subtree paths,
 	// check if the path is exactly the same to continue or redirect
 	if r.URL.Path != "/" {
-		http.NotFound(w, r)
+		// Writing error using our custom helper
+		app.notFound(w)
 		return
 	}
 
@@ -27,9 +28,8 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// The function "template.ParseFiles" accepts many template files paths (variadic function)
 	ts, err := template.ParseFiles(templatefilesPaths...)
 	if err != nil {
-		// Using the application dependency `errorLog` injected on its initialization in main()
-		app.errorLog.Println(err.Error())
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		// Writing and logging error using our custom helper
+		app.serverError(w, err)
 		return
 	}
 
@@ -41,8 +41,8 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	var dynamicData interface{} = nil
 	err = ts.ExecuteTemplate(w, "base", dynamicData)
 	if err != nil {
-		app.errorLog.Println(err.Error())
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		// Writing and logging error using our custom helper
+		app.serverError(w, err)
 	}
 }
 
@@ -50,7 +50,8 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	// Getting query parameters
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
-		http.NotFound(w, r)
+		// Writing error using our custom helper
+		app.notFound(w)
 		return
 	}
 
@@ -67,11 +68,8 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 		// w.Write(...), http.Error(...), fmt.Fprintf(w,...), etc) to have effect.
 		w.Header().Set("Allow", http.MethodPost)
 
-		// * For errors use the helper "http.Error(w,...)" to call "w.WriteHeader" and "w.Write"
-		// indirectly to write the response;
-		// * Always use http constants as the best practice: http.StatusMethodNotAllowed = 405.
-		// See all http constants in https://pkg.go.dev/net/http#pkg-constants
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		// Writing error using our custom helper
+		app.clientError(w, http.StatusMethodNotAllowed)
 		return
 	}
 

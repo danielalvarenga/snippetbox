@@ -26,4 +26,15 @@ See all application configurations: `go run ./cmd/web -help`
 ### Local
 
 1. Starting DB: `docker-compose up -d`;
-2. Starting the web server: `go run ./cmd/web`
+2. Fetch dependencies: `go mod download`
+3. Starting the web server: `go run ./cmd/web`
+
+## Useful Go commands often used
+
+* Download dependencies: `go mod download`
+* Remove all unused packages in _go.mod_ and _go.sum_: `go mod tidy`
+* Verify is downloaded packages wasn't modified unexpectedly: `go mod verify`
+* Adding dependency with the latest release for the major version v1: `go get github.com/foo/bar@v1`
+* Adding dependency with the specific version: `go get github.com/foo/bar@v1.2.3`
+* Upgrading to the latest minor or patch release: `go get -u github.com/foo/bar`
+* Upgrading to specific version: `go get -u github.com/foo/bar@v2.0.0`
